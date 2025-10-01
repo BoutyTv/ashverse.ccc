@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charity Creator Cup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            scroll-behavior: smooth;
+        }
+        .hero {
+            background: linear-gradient(to bottom, #000, #1a1a1a);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 30px 30px;
+            transform: perspective(1000px) rotateX(60deg);
+            transform-origin: center bottom;
+            opacity: 0.4;
+            z-index: 0;
+        }
+        .hero > * {
+            position: relative;
+            z-index: 1;
+        }
+        .event-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 2.5rem;
+        }
+        .event-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .event-card.animate-on-click {
+            animation: cardPulse 0.6s ease-in-out;
+        }
+        @keyframes cardPulse {
+            0% { transform: scale(1); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+            50% { transform: scale(1.02); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); }
+            100% { transform: scale(1); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        }
+        .animate-fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 1rem;
+        }
+        .navbar {
+            background: linear-gradient(to bottom, #1a1a1a, #000);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1rem 0;
+        }
+        .navbar a {
+            color: white;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .navbar a:hover {
+            color: #a0a0a0;
+        }
+        @media (max-width: 640px) {
+            .navbar .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+        }
+        .event-card-content {
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+            justify-content: space-between;
+            padding: 1.5rem;
+            color: #000;
+        }
+        .event-card-content h3 {
+            color: #000;
+        }
+        .event-card-content p {
+            color: #000;
+        }
+        .event-card-content .button-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+        .event-card-content a {
+            color: #1a73e8;
+            font-weight: 600;
+        }
+        #events h2 {
+            color: #000;
+        }
+        #creator h2, #creator h3 {
+            color: #000;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal[role="dialog"] {
+            outline: none;
+        }
+        .modal-content {
+            background: white;
+            max-width: 500px;
+            width: 90%;
+            padding: 2rem;
+            border-radius: 1rem;
+            position: relative;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal.show .modal-content {
+            animation: modalSlideUp 0.5s ease-in-out forwards;
+        }
+        .modal.show .modal-content h2:not(.home-modal-title) {
+            color: #000;
+        }
+        @keyframes modalSlideUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1a1a1a;
+            color: white;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1000;
+            border: none;
+            cursor: pointer;
+        }
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .back-to-top:hover {
+            background: #333;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="nav-links">
+                <a href="#title" data-modal-target="home">Home</a>
+                <a href="#events" data-modal-target="events">Events</a>
+                <a href="#creator" data-modal-target="creator">Creator</a>
+                <a href="#contact" data-modal-target="contact">Kontakt</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Modal -->
+    <div class="modal" id="modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <span class="modal-close" aria-label="Schließen">&times;</span>
+            <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
+            <p id="modal-description" class="text-gray-600"></p>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="max-w-4xl mx-auto animate-fade-in">
+            <h1 id="title" class="text-5xl md:text-7xl font-bold mb-2">Charity Creator Cup</h1>
+            <p class="text-lg mb-6">Powered by AshVerse</p>
+            <a href="https://forms.gle/hy4QGxB3Z615FZor9" class="inline-block bg-white text-black px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition" aria-label="Am Event teilnehmen">Mitmachen</a>
+        </div>
+    </section>
+
+    <!-- Events Section -->
+    <section id="events" class="py-16 px-4">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12">Event-Infos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Event 1 -->
+                <div class="event-card bg-white rounded-2xl overflow-hidden animate-fade-in">
+                    <img src="https://www.minecraft.net/dims4/default/width/1920/height/1080/crop/0x0-0x0/resize/1920x1080!/quality/90/?url=https%3A%2F%2Fassets.minecraft.net%2Fcontent%2Fdam%2Fmarketplace%2Fimages%2F7c7db897-4cb9-4fec-9c6a-2f96e695928d%2F7c7db897-4cb9-4fec-9c6a-2f96e695928d_1_1920x1080.jpg" alt="Lootrush Battle Royale mit Elytra-Flug in Minecraft" class="w-full h-64 object-cover" loading="lazy">
+                    <div class="event-card-content">
+                        <div>
+                            <svg class="icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <h3 class="text-2xl font-semibold mb-2">Lootrush-Spiel</h3>
+                            <p class="text-gray-600 mb-4">Battle-Royale mit Elytra-Flug in runder Arena. Kämpfe in Zweier-Teams.</p>
+                        </div>
+                        <div class="button-wrapper">
+                            <a href="https://example.com/lootrush" class="font-semibold hover:underline" aria-label="Mehr über Lootrush-Spiel erfahren">Mehr erfahren</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Event 2 -->
+                <div class="event-card bg-white rounded-2xl overflow-hidden animate-fade-in">
+                    <img src="https://www.minecraft.net/dims4/default/width/1920/height/1080/crop/0x0-0x0/resize/1920x1080!/quality/90/?url=https%3A%2F%2Fassets.minecraft.net%2Fcontent%2Fdam%2Fgames%2Fminecraft%2Fkey-art%2FMinecraft_Community_1920x1080.jpg" alt="Zweier-Teams in Minecraft: Streamer und Zuschauer zusammen" class="w-full h-64 object-cover" loading="lazy">
+                    <div class="event-card-content">
+                        <div>
+                            <svg class="icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <h3 class="text-2xl font-semibold mb-2">Zweier-Teams</h3>
+                            <p class="text-gray-600 mb-4">Streamer + Zuschauer bilden Teams. Kämpfe mit deinem Lieblingsstreamer!</p>
+                        </div>
+                        <div class="button-wrapper">
+                            <a href="https://example.com/teams" class="font-semibold hover:underline" aria-label="Teams ansehen">Teams ansehen</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Event 3 -->
+                <div class="event-card bg-white rounded-2xl overflow-hidden animate-fade-in">
+                    <img src="https://www.minecraft.net/dims4/default/width/1920/height/1080/crop/0x0-0x0/resize/1920x1080!/quality/90/?url=https%3A%2F%2Fassets.minecraft.net%2Fcontent%2Fdam%2Fmarketplace%2Fimages%2Fcharity-water%2Fcharity-water_1_1920x1080.jpg" alt="Spendenaktion für Charity in Minecraft Event" class="w-full h-64 object-cover" loading="lazy">
+                    <div class="event-card-content">
+                        <div>
+                            <svg class="icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            <h3 class="text-2xl font-semibold mb-2">Spendenaktion</h3>
+                            <p class="text-gray-600 mb-4">Spende für den guten Zweck und hilf mit.</p>
+                        </div>
+                        <div class="button-wrapper">
+                            <a href="https://example.com/donate" class="font-semibold hover:underline" aria-label="Jetzt spenden">Jetzt spenden</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Creator Section -->
+    <section id="creator" class="py-16 px-4 bg-gray-100">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-12">Der Creator</h2>
+            <div class="max-w-2xl mx-auto">
+                <img src="https://iili.io/Ka59uCx.md.png" alt="BoutyTv Profilbild" class="w-32 h-32 rounded-full mx-auto mb-4" loading="lazy">
+                <h3 class="text-2xl font-semibold mb-2">BoutyTv</h3>
+                <p class="text-gray-600 mb-4">Streamer und YouTuber, der die Charity Creator Cup ins Leben gerufen hat. Begleite BoutyTv für spannende Minecraft-Action und unterstütze die gute Sache!</p>
+                <a href="https://twitch.tv/boutytv" class="text-blue-600 font-semibold hover:underline" aria-label="Mehr über BoutyTv auf Twitch">Mehr über BoutyTv</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-900 text-white py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-lg mb-4">Produziert von AshVerse</p>
+            <div class="flex justify-center space-x-4">
+                <a href="https://example.com/charity" class="hover:text-gray-300" aria-label="Über die Charity">Über die Charity</a>
+                <a href="https://example.com/rules" class="hover:text-gray-300" aria-label="Event-Regeln">Event-Regeln</a>
+                <a href="mailto:contact@example.com" class="hover:text-gray-300" aria-label="Kontakt aufnehmen">Kontakt</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="back-to-top" title="Zurück nach oben" aria-label="Zurück nach oben scrollen">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+    <script>
+        // Animation and modal handling
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hero section animation
+            const heroElement = document.querySelector('.hero .animate-fade-in');
+            if (heroElement) {
+                setTimeout(() => {
+                    heroElement.style.opacity = '1';
+                    heroElement.style.transform = 'translateY(0)';
+                }, 200);
+            }
+
+            // Intersection Observer for event cards fade-in on load (staggered)
+            const eventCards = document.querySelectorAll('.event-card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('animate-fade-in');
+                        }, index * 200);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            eventCards.forEach(card => observer.observe(card));
+
+            // Modal handling
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+            const modalClose = document.querySelector('.modal-close');
+            let activeLink = null;
+
+            const modalContent = {
+                home: {
+                    title: 'Willkommen beim Charity Creator Cup',
+                    description: 'Trete dem Charity Creator Cup bei, einem spannenden Minecraft-Event, das von AshVerse unterstützt wird. Klicke auf "Mitmachen", um dich anzumelden!'
+                },
+                events: {
+                    title: 'Event-Details',
+                    description: 'Erfahre mehr über die spannenden Events, wie das Lootrush-Spiel, Zweier-Teams und die Spendenaktion für einen guten Zweck.'
+                },
+                creator: {
+                    title: 'Über den Creator',
+                    description: 'Lerne BoutyTv kennen, den Streamer und YouTuber hinter dem Charity Creator Cup. Folge ihm auf Twitch für mehr Action!'
+                },
+                contact: {
+                    title: 'Kontaktiere uns',
+                    description: 'Hast du Fragen? Kontaktiere das Team hinter dem Charity Creator Cup für weitere Informationen.'
+                }
+            };
+
+            if (modal && modalTitle && modalDescription) {
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const target = link.getAttribute('data-modal-target');
+
+                        // Trigger subtle animation on event cards
+                        eventCards.forEach(card => {
+                            card.classList.add('animate-on-click');
+                            setTimeout(() => card.classList.remove('animate-on-click'), 600);
+                        });
+
+                        // Modal toggle
+                        if (activeLink === link && modal.classList.contains('show')) {
+                            modal.classList.remove('show');
+                            modal.setAttribute('aria-hidden', 'true');
+                            document.body.style.overflow = '';
+                            modalTitle.classList.remove('home-modal-title');
+                            activeLink = null;
+                        } else {
+                            modalTitle.textContent = modalContent[target].title;
+                            modalDescription.textContent = modalContent[target].description;
+                            modal.classList.add('show');
+                            modal.setAttribute('aria-hidden', 'false');
+                            document.body.style.overflow = 'hidden';
+                            if (target === 'home') {
+                                modalTitle.classList.add('home-modal-title');
+                            } else {
+                                modalTitle.classList.remove('home-modal-title');
+                            }
+                            activeLink = link;
+                        }
+                    });
+                });
+
+                if (modalClose) {
+                    modalClose.addEventListener('click', () => {
+                        modal.classList.remove('show');
+                        modal.setAttribute('aria-hidden', 'true');
+                        document.body.style.overflow = '';
+                        modalTitle.classList.remove('home-modal-title');
+                        activeLink = null;
+                    });
+                }
+
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                        modal.setAttribute('aria-hidden', 'true');
+                        document.body.style.overflow = '';
+                        modalTitle.classList.remove('home-modal-title');
+                        activeLink = null;
+                    }
+                });
+            }
+
+            // Back to Top Button
+            const backToTopButton = document.getElementById('back-to-top');
+            if (backToTopButton) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 300) {
+                        backToTopButton.classList.add('show');
+                    } else {
+                        backToTopButton.classList.remove('show');
+                    }
+                });
+
+                backToTopButton.addEventListener('click', () => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
